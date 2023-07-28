@@ -6,7 +6,7 @@
 /*   By: fmanzana <fmanzana@student.42malaga.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:13:55 by fmanzana          #+#    #+#             */
-/*   Updated: 2023/07/28 14:02:27 by fmanzana         ###   ########.fr       */
+/*   Updated: 2023/07/28 14:06:36 by fmanzana         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -270,11 +270,15 @@ void	ScalarConverter::printScalars(void) {
 
 	if (!this->_possible[2])
 		std::cout << "float: impossible" << std::endl;
+	else if (this->_f - this->_num == 0)
+		std::cout << "float: " << this->_f << ".0f" << std::endl;
 	else
-		std::cout << "float " << this->_f << std::endl;
+		std::cout << "float: " << this->_f << "f" << std::endl;
 
 	if (!this->_possible[3])
 		std::cout << "double: impossible" << std::endl;
+	else if (this->_d - this->_num == 0)
+		std::cout << "double: " << this->_d << ".0" << std::endl;
 	else
-		std::cout << "double " << this->_d << std::endl;
+		std::cout << "double: " << this->_d << std::endl;
 }
