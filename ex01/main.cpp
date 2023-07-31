@@ -6,11 +6,11 @@
 /*   By: fmanzana <fmanzana@student.42malaga.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 16:01:22 by fmanzana          #+#    #+#             */
-/*   Updated: 2023/07/28 16:57:21 by fmanzana         ###   ########.fr       */
+/*   Updated: 2023/07/31 18:29:12 by fmanzana         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "data.h"
+#include "data.hpp"
 
 uintptr_t serialize(Data *ptr) {
 	return (reinterpret_cast<uintptr_t>(ptr));
