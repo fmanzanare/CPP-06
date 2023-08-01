@@ -6,7 +6,7 @@
 /*   By: fmanzana <fmanzana@student.42malaga.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:13:55 by fmanzana          #+#    #+#             */
-/*   Updated: 2023/08/01 16:23:17 by fmanzana         ###   ########.fr       */
+/*   Updated: 2023/08/01 16:25:17 by fmanzana         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -301,16 +301,16 @@ ScalarConverter::ScalarConverter(const ScalarConverter &cp) {
 }
 
 ScalarConverter &ScalarConverter::operator=(const ScalarConverter &cp) {
-	this->_argv = cp._argv;
-	this->_num = cp._num;
-	this->_c = cp._c;
-	this->_f = cp._f;
-	this->_d = cp._d;
+	_argv = cp._argv;
+	_num = cp._num;
+	_c = cp._c;
+	_f = cp._f;
+	_d = cp._d;
 	for (int i = 0; i < 4; i++) {
-		this->_possible[i] = cp._possible[i];
+		_possible[i] = cp._possible[i];
 	}
-	this->_type = cp._type;
-	this->_pseudolit = cp._pseudolit;
-	this->_printable = cp._printable;
+	_type = cp._type;
+	_pseudolit = cp._pseudolit;
+	_printable = cp._printable;
 	return (*this);
 }
