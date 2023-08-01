@@ -6,11 +6,22 @@
 /*   By: fmanzana <fmanzana@student.42malaga.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:13:55 by fmanzana          #+#    #+#             */
-/*   Updated: 2023/07/28 14:06:36 by fmanzana         ###   ########.fr       */
+/*   Updated: 2023/08/01 16:23:17 by fmanzana         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ScalarConverter.hpp"
+
+std::string ScalarConverter::_argv = "";
+int ScalarConverter::_num = 0;
+char ScalarConverter::_c = 0;
+float ScalarConverter::_f = 0;
+double ScalarConverter::_d = 0;
+bool ScalarConverter::_possible[4] = {false, false, false, false};
+int ScalarConverter::_type = 0;
+bool ScalarConverter::_pseudolit = false;
+bool ScalarConverter::_printable = false;
+
 
 std::string charArrToString(const char *str) {
 	std::string		res = "";
@@ -19,38 +30,6 @@ std::string charArrToString(const char *str) {
 		res += str[i];
 
 	return (res);
-}
-
-ScalarConverter::ScalarConverter() {}
-
-ScalarConverter::ScalarConverter(const char *str) {
-	this->_argv = charArrToString(str);
-	this->_pseudolit = false;
-	this->_type = parser(str);
-	this->_printable = true;
-	converter();
-	printScalars();
-}
-
-ScalarConverter::~ScalarConverter() {}
-
-ScalarConverter::ScalarConverter(const ScalarConverter &cp) {
-	*this = cp;
-}
-
-ScalarConverter &ScalarConverter::operator=(const ScalarConverter &cp) {
-	this->_argv = cp._argv;
-	this->_num = cp._num;
-	this->_c = cp._c;
-	this->_f = cp._f;
-	this->_d = cp._d;
-	for (int i = 0; i < 4; i++) {
-		this->_possible[i] = cp._possible[i];
-	}
-	this->_type = cp._type;
-	this->_pseudolit = cp._pseudolit;
-	this->_printable = cp._printable;
-	return (*this);
 }
 
 int	ScalarConverter::parser(const char *str) {
@@ -67,8 +46,8 @@ int	ScalarConverter::parser(const char *str) {
 
 	// Checks if the argument is a pseudliteral.
 	for (int i = 0; i < 6; i++) {
-		if (this->_argv == pseudolits[i]) {
-			this->_pseudolit = true;
+		if (_argv == pseudolits[i]) {
+			_pseudolit = true;
 			if (i < 3)
 				return (3);
 			else
@@ -98,6 +77,15 @@ int	ScalarConverter::parser(const char *str) {
 			return (0);
 	}
 
+	// Checks if the arguments is zero.
+	bool only_zero = true;
+	for (int i = 0; i < (int)strlen(str); i++) {
+		if (str[i] != '0' && str[i] != '.' && str[i] != 'f')
+			only_zero = false;
+	}
+	if (only_zero)
+		return (5);
+
 	// Checks if the number is float or double
 	if (point == 1 && fchar == 1)
 		return (3);
@@ -108,177 +96,221 @@ int	ScalarConverter::parser(const char *str) {
 	return (2);
 }
 
-void	ScalarConverter::converter(void) {
+void	ScalarConverter::converter(const char *str) {
+	_argv = charArrToString(str);
+	_pseudolit = false;
+	_type = parser(str);
+	_printable = true;
+
 	long	tmp;
 	double	d_tmp;
 
-	switch (this->_type) {
+	switch (_type) {
 		case 0:
-			this->_possible[0] = false;
-			this->_possible[1] = false;
-			this->_possible[2] = false;
-			this->_possible[3] = false;
+			_possible[0] = false;
+			_possible[1] = false;
+			_possible[2] = false;
+			_possible[3] = false;
 			break ;
 		case 1:
-			this->_num = static_cast<int>(this->_argv.at(0));
-			if (this->_num < 32 || this->_num > 255 || this->_num == 127) {
-				this->_possible[0] = false;
-				this->_printable = false;
+			_num = static_cast<int>(_argv.at(0));
+			if (_num < 32 || _num > 255 || _num == 127) {
+				_possible[0] = false;
+				_printable = false;
 			}
 			else {
-				this->_possible[0] = true;
-				this->_c = this->_argv.at(0);
+				_possible[0] = true;
+				_c = _argv.at(0);
 			}
-			this->_possible[1] = true;
-			this->_possible[2] = true;
-			this->_possible[3] = true;
-			this->_f = static_cast<float>(this->_c);
-			this->_d = static_cast<double>(this->_c);
+			_possible[1] = true;
+			_possible[2] = true;
+			_possible[3] = true;
+			_f = static_cast<float>(_c);
+			_d = static_cast<double>(_c);
 			break ;
 		case 2:
-			tmp = std::atol(this->_argv.c_str());
+			tmp = std::atol(_argv.c_str());
 			if (tmp > INT_MAX || tmp < INT_MIN) {
-				this->_possible[0] = false;
-				this->_possible[1] = false;
+				_possible[0] = false;
+				_possible[1] = false;
 			} else if (tmp < 32 || tmp > 255 || tmp == 127) {
-				this->_possible[0] = false;
-				this->_possible[1] = true;
-				this->_printable = false;
-				this->_num = static_cast<int>(tmp);
+				_possible[0] = false;
+				_possible[1] = true;
+				_printable = false;
+				_num = static_cast<int>(tmp);
 			} else {
-				this->_possible[0] = true;
-				this->_possible[1] = true;
-				this->_num = static_cast<int>(tmp);
-				this->_c = static_cast<char>(tmp);
+				_possible[0] = true;
+				_possible[1] = true;
+				_num = static_cast<int>(tmp);
+				_c = static_cast<char>(tmp);
 			}
-			this->_possible[2] = true;
-			this->_possible[3] = true;
-			this->_f = static_cast<float>(tmp);
-			this->_d = static_cast<double>(tmp);
+			_possible[2] = true;
+			_possible[3] = true;
+			_f = static_cast<float>(tmp);
+			_d = static_cast<double>(tmp);
 			break;
 		case 3:
-			d_tmp = std::strtod(this->_argv.c_str(), NULL);
+			d_tmp = std::strtod(_argv.c_str(), NULL);
 			if (d_tmp > std::numeric_limits<float>::max()
 				|| d_tmp < std::numeric_limits<float>::min()) {
-				this->_possible[0] = false;
-				this->_possible[1] = false;
-				this->_possible[2] = false;
+				_possible[0] = false;
+				_possible[1] = false;
+				_possible[2] = false;
 			} else {
 				tmp = static_cast<int>(d_tmp);
 				if (tmp > INT_MAX || tmp < INT_MIN) {
-					this->_possible[0] = false;
-					this->_possible[1] = false;
-					this->_possible[2] = true;
-					this->_f = static_cast<float>(d_tmp);
+					_possible[0] = false;
+					_possible[1] = false;
+					_possible[2] = true;
+					_f = static_cast<float>(d_tmp);
 				} else if (tmp < 32 || tmp > 255 || tmp == 127) {
-					this->_possible[0] = false;
-					this->_possible[1] = true;
-					this->_possible[2] = true;
-					this->_printable = false;
-					this->_num = static_cast<int>(d_tmp);
-					this->_f = static_cast<float>(d_tmp);
+					_possible[0] = false;
+					_possible[1] = true;
+					_possible[2] = true;
+					_printable = false;
+					_num = static_cast<int>(d_tmp);
+					_f = static_cast<float>(d_tmp);
 				} else {
-					this->_possible[0] = true;
-					this->_possible[1] = true;
-					this->_possible[2] = true;
-					this->_num = static_cast<int>(d_tmp);
-					this->_c = static_cast<char>(d_tmp);
-					this->_f = static_cast<float>(d_tmp);
+					_possible[0] = true;
+					_possible[1] = true;
+					_possible[2] = true;
+					_num = static_cast<int>(d_tmp);
+					_c = static_cast<char>(d_tmp);
+					_f = static_cast<float>(d_tmp);
 				}
 			}
-			this->_possible[3] = true;
-			this->_d = static_cast<double>(d_tmp);
-			if (this->_pseudolit) {
-				this->_possible[0] = false;
-				this->_possible[1] = false;
-				this->_num = 0;
-				this->_c = 0;
+			_possible[3] = true;
+			_d = static_cast<double>(d_tmp);
+			if (_pseudolit) {
+				_possible[0] = false;
+				_possible[1] = false;
+				_num = 0;
+				_c = 0;
 			}
 			break;
 		case 4:
-			this->_d = std::strtod(this->_argv.c_str(), NULL);
-			if (this->_d > std::numeric_limits<float>::max()
-				|| this->_d < std::numeric_limits<float>::min()) {
-				this->_possible[0] = false;
-				this->_possible[1] = false;
-				this->_possible[2] = false;
+			_d = std::strtod(_argv.c_str(), NULL);
+			if (_d > std::numeric_limits<float>::max()
+				|| _d < std::numeric_limits<float>::min()) {
+				_possible[0] = false;
+				_possible[1] = false;
+				_possible[2] = false;
 			} else {
-				tmp = static_cast<int>(this->_d);
+				tmp = static_cast<int>(_d);
 				if (tmp > INT_MAX || tmp < INT_MIN) {
-					this->_possible[0] = false;
-					this->_possible[1] = false;
-					this->_possible[2] = true;
-					this->_f = static_cast<float>(this->_d);
+					_possible[0] = false;
+					_possible[1] = false;
+					_possible[2] = true;
+					_f = static_cast<float>(_d);
 				} else if (tmp < 32 || tmp > 255 || tmp == 127) {
-					this->_possible[0] = false;
-					this->_possible[1] = true;
-					this->_possible[2] = true;
-					this->_printable = false;
-					this->_num = static_cast<int>(this->_d);
-					this->_f = static_cast<float>(this->_d);
+					_possible[0] = false;
+					_possible[1] = true;
+					_possible[2] = true;
+					_printable = false;
+					_num = static_cast<int>(_d);
+					_f = static_cast<float>(_d);
 				} else {
-					this->_possible[0] = true;
-					this->_possible[1] = true;
-					this->_possible[2] = true;
-					this->_num = static_cast<int>(this->_d);
-					this->_c = static_cast<char>(this->_d);
-					this->_f = static_cast<float>(this->_d);
+					_possible[0] = true;
+					_possible[1] = true;
+					_possible[2] = true;
+					_num = static_cast<int>(_d);
+					_c = static_cast<char>(_d);
+					_f = static_cast<float>(_d);
 				}
 			}
-			this->_possible[3] = true;
-			if (this->_pseudolit) {
-				this->_possible[0] = false;
-				this->_possible[1] = false;
-				this->_num = 0;
-				this->_c = 0;
+			_possible[3] = true;
+			if (_pseudolit) {
+				_possible[0] = false;
+				_possible[1] = false;
+				_num = 0;
+				_c = 0;
 			}
 			break ;
+		case 5:
+			_possible[0] = false;
+			_printable = false;
+			_c = 0;
+			_num = 0;
+			_possible[1] = true;
+			_f = 0.0f;
+			_possible[2] = true;
+			_d = 0.0;
+			_possible[3] = true;
+			break;
 		default:
 			break ;
 	}
+	printScalars();
 }
 
 void	ScalarConverter::printScalars(void) {
-	if (this->_pseudolit) {
+	if (_pseudolit) {
 		std::cout << "char: impossible" << std::endl;
 		std::cout << "int: impossible" << std::endl;
-		if (this->_pseudolit && this->_type == 4)
-			std::cout << "float: " << this->_argv << "f" << std::endl;
-		else if (this->_pseudolit)
-			std::cout << "float: " << this->_argv << std::endl;
-		if (this->_pseudolit && this->_type == 3) {
+		if (_pseudolit && _type == 4)
+			std::cout << "float: " << _argv << "f" << std::endl;
+		else if (_pseudolit)
+			std::cout << "float: " << _argv << std::endl;
+		if (_pseudolit && _type == 3) {
 			std::cout << "double: ";
-			for (int i = 0; i < (int)this->_argv.size() - 1; i++)
-				std::cout << this->_argv.at(i);
+			for (int i = 0; i < (int)_argv.size() - 1; i++)
+				std::cout << _argv.at(i);
 			std::cout << std::endl;
-		} else if (this->_pseudolit)
-			std::cout << "double: " << this->_argv << std::endl;
+		} else if (_pseudolit)
+			std::cout << "double: " << _argv << std::endl;
 		return ;
 	}
 
-	if (!this->_possible[0] && !this->_printable)
+	if (!_possible[0] && !_printable)
 		std::cout << "char: Non displayable" << std::endl;
-	else if (!this->_possible[0])
+	else if (!_possible[0])
 		std::cout << "char: impossible" << std::endl;
 	else
-		std::cout << "char: " << this->_c << std::endl;
+		std::cout << "char: " << _c << std::endl;
 
-	if (!this->_possible[1])
+	if (!_possible[1])
 		std::cout << "int: impossible" << std::endl;
 	else
-		std::cout << "int: " << this->_num << std::endl;
+		std::cout << "int: " << _num << std::endl;
 
-	if (!this->_possible[2])
+	if (!_possible[2])
 		std::cout << "float: impossible" << std::endl;
-	else if (this->_f - this->_num == 0)
-		std::cout << "float: " << this->_f << ".0f" << std::endl;
+	else if (_f - _num == 0)
+		std::cout << "float: " << _f << ".0f" << std::endl;
 	else
-		std::cout << "float: " << this->_f << "f" << std::endl;
+		std::cout << "float: " << _f << "f" << std::endl;
 
-	if (!this->_possible[3])
+	if (!_possible[3])
 		std::cout << "double: impossible" << std::endl;
-	else if (this->_d - this->_num == 0)
-		std::cout << "double: " << this->_d << ".0" << std::endl;
+	else if (_d - _num == 0)
+		std::cout << "double: " << _d << ".0" << std::endl;
 	else
-		std::cout << "double: " << this->_d << std::endl;
+		std::cout << "double: " << _d << std::endl;
+}
+
+/*
+	The class is static and it cannot be instantiated.
+	(Constructors, destructor and assignation operator are private)
+*/
+ScalarConverter::ScalarConverter() {}
+
+ScalarConverter::~ScalarConverter() {}
+
+ScalarConverter::ScalarConverter(const ScalarConverter &cp) {
+	*this = cp;
+}
+
+ScalarConverter &ScalarConverter::operator=(const ScalarConverter &cp) {
+	this->_argv = cp._argv;
+	this->_num = cp._num;
+	this->_c = cp._c;
+	this->_f = cp._f;
+	this->_d = cp._d;
+	for (int i = 0; i < 4; i++) {
+		this->_possible[i] = cp._possible[i];
+	}
+	this->_type = cp._type;
+	this->_pseudolit = cp._pseudolit;
+	this->_printable = cp._printable;
+	return (*this);
 }
